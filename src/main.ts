@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { envs } from './config/envs';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { RpcCustomExceptionFilter } from './common/exceptions/rpc-exception.filter';
 
 async function bootstrap() {
@@ -15,11 +15,21 @@ async function bootstrap() {
     forbidNonWhitelisted : true
   }))
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude : [
+      {
+        path : '',
+        method : RequestMethod.GET
+      }
+    ]
+  });
 
   app.useGlobalFilters( new RpcCustomExceptionFilter() )
 
   await app.listen(envs.port);
+
+
+  console.log('HealthCheck configured')
 
   logger.log(`Gateway running on port ${envs.port}`);
 }
